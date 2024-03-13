@@ -28,10 +28,7 @@ La arquitectura de la aplicación se compone de los siguientes componentes:
 
 ## Funcionamiento
 
-<video width="640" height="360" controls>
-  <source src="media/DesplieguesFuncionando.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+https://github.com/JaiderArleyGonzalez/TallerAWS6/assets/89174283/5184e74a-6da9-41ef-965d-1ff2c4477433
 
 1. Cuando un cliente realiza una solicitud HTTP al balanceador de carga (Weblogroundrobin), éste distribuye la solicitud a uno de los servicios de registro de mensajes (LogServices) disponibles utilizando el algoritmo Round Robin.
 
