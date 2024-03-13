@@ -1,4 +1,4 @@
-package edu.arep;
+package edu.arep.roundrobin;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -8,11 +8,12 @@ import java.net.URL;
 public class RRInvoker {
 
     private static final String USER_AGENT = "Mozilla/5.0";
-    private static final String GET_URL = "http://localhost:5000/logservice";
 
-    public static String Invoke() throws IOException {
+    private static final String GET_URL = "http://ec2-3-85-129-106.compute-1.amazonaws.com:";
 
-        URL obj = new URL(GET_URL);
+    public static String Invoke(String query, String PORT) throws IOException {
+
+        URL obj = new URL(GET_URL + PORT +"/logservice?"+ query);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("GET");
         con.setRequestProperty("User-Agent", USER_AGENT);

@@ -1,32 +1,154 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Form Example</title>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat personal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css" />
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css' />
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-<h1>Form with GET</h1>
-<form action="/log">
-    <label for="msg">Mensaje:</label><br>
-    <input type="text" id="msg" name="msg" value="Mensaje"><br><br>
-    <input type="button" value="Submit" onclick="loadGetMsg()">
-</form>
-<div id="getrespmsg"></div>
+<div class="container">
+    <div class="info-box" id="info-app">
+        <h2>Sobre la aplicación...</h2>
+        <p>La aplicación proporcionada es un servicio de registro de mensajes en un chat, implementado utilizando Spark Java y MongoDB como base de datos. Aquí hay una descripción detallada de los componentes principales:</p>
+        <ul>
+            <li><strong>LogService (Clase principal):</strong>
+                <ul>
+                    <li>Esta clase inicia el servicio web utilizando Spark Java.</li>
+                    <li>Define una ruta GET <code>/logservice</code> que recibe un parámetro de consulta <code>msg</code>.</li>
+                    <li>Llama al método <code>sendMessage</code> para manejar la solicitud y devolver una lista de mensajes.</li>
+                </ul>
+            </li>
+            <li><strong>MessageDAO:</strong>
+                <ul>
+                    <li>Esta clase se encarga de interactuar con la base de datos MongoDB para agregar, listar y eliminar mensajes.</li>
+                    <li>Tiene métodos para agregar un nuevo mensaje, listar los últimos mensajes y eliminar mensajes existentes.</li>
+                </ul>
+            </li>
+            <li><strong>MongoUtil:</strong>
+                <ul>
+                    <li>Proporciona una utilidad para obtener una instancia de <code>MongoDatabase</code> utilizando la conexión a la base de datos MongoDB especificada en <code>CONNECTION_STRING</code>.</li>
+                </ul>
+            </li>
+            <li><strong>RRInvoker:</strong>
+                <ul>
+                    <li>Esta clase se utiliza para invocar un servicio de registro de mensajes a través de una solicitud HTTP.</li>
+                    <li>Define un método <code>Invoke</code> que realiza una solicitud GET al servicio de registro de mensajes y devuelve la respuesta.</li>
+                </ul>
+            </li>
+            <li><strong>Weblogroundrobin:</strong>
+                <ul>
+                    <li>Esta clase principal de Spark Java proporciona una ruta GET <code>/log</code> que invoca el servicio de registro de mensajes utilizando <code>RRInvoker</code>.</li>
+                </ul>
+            </li>
+        </ul>
+        <p>La aplicación utiliza un diseño de arquitectura simple en capas, donde <code>LogService</code> actúa como el controlador de la capa de presentación, <code>MessageDAO</code> como el controlador de la capa de acceso a datos y <code>MongoUtil</code> como la utilidad de conexión a la base de datos. La aplicación permite agregar mensajes, listar los últimos mensajes y eliminar mensajes existentes en el chat.</p>
+    </div>
+</div>
+
+<!-- Ubicación del chat -->
+<div class="bottom-right">
+    <!-- Chat -->
+    <div class="chat">
+        <!-- Información del contacto -->
+        <div class="contact bar">
+            <div class="pic stark"></div>
+            <div class="name">
+                Notas - Mensajes Propios
+            </div>
+        </div>
+        <div class="messages" id="chat">
+            <!-- Burbujas mientras escribe -->
+            <div class="message stark">
+                <div class="typing typing-1"></div>
+                <div class="typing typing-2"></div>
+                <div class="typing typing-3"></div>
+            </div>
+        </div>
+        <!-- Inputs y Forms -->
+        <form class="input" onsubmit="return false;">
+            <input id="messageInput" placeholder="Escribe tu mensaje aquí" type="text" onkeydown="handleKeyDown(event)" />
+            <button type="button" onclick="loadGetMsg()">Enviar</button> <!-- Cambiado el tipo de botón a "button" -->
+        </form>
+    </div>
+</div>
 
 <script>
-    function loadGetMsg() {
-        let msgVar = document.getElementById("msg").value;
+    window.onload = function() {
+        loadMessages();
+    };
+
+    function formatDate(date) {
+        const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+        return new Date(date).toLocaleDateString('es-ES', options);
+    }
+
+    function loadMessages() {
         const xhttp = new XMLHttpRequest();
         xhttp.onload = function() {
-            document.getElementById("getrespmsg").innerHTML =
-            this.responseText;
+            const chatMessages = document.querySelector('.messages');
+            const messages = JSON.parse(this.responseText);
+
+            chatMessages.innerHTML = '';
+
+            for (let i = messages.length - 1; i >= 0; i--) {
+                const messageElement = document.createElement("div");
+                messageElement.classList.add("message");
+                messageElement.textContent = messages[i].message;
+
+                const timeElement = document.createElement("div");
+                timeElement.classList.add("time");
+                timeElement.textContent = formatDate(messages[i].date.$date);
+                messageElement.appendChild(timeElement);
+
+                chatMessages.appendChild(messageElement);
+            }
+        }
+        xhttp.open("GET", "/log");
+        xhttp.send();
+    }
+
+    function loadGetMsg() {
+        let msgVar = document.getElementById("messageInput").value;
+        if (!msgVar) {
+            return;
+        }
+
+        const xhttp = new XMLHttpRequest();
+        xhttp.onload = function() {
+            const chatMessages = document.querySelector('.messages');
+            const messages = JSON.parse(this.responseText);
+
+            // Crear un nuevo elemento de mensaje
+            const messageElement = document.createElement("div");
+            messageElement.classList.add("message");
+            messageElement.textContent = msgVar; // Agregar el contenido del mensaje
+
+            // Crear un elemento para la fecha y darle formato
+            const timeElement = document.createElement("div");
+            timeElement.classList.add("time");
+            timeElement.textContent = formatDate(new Date()); // Obtener la fecha actual y darle formato
+            messageElement.appendChild(timeElement); // Agregar la fecha al mensaje
+
+            // Agregar el nuevo mensaje al final de la lista de mensajes
+            chatMessages.appendChild(messageElement);
+
+            // Limpiar el campo de entrada después de enviar el mensaje
+            document.getElementById("messageInput").value = "";
         }
         xhttp.open("GET", "/log?msg="+msgVar);
         xhttp.send();
     }
-</script>
 
+    function handleKeyDown(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            loadGetMsg();
+        }
+    }
+
+</script>
 
 </body>
 </html>
